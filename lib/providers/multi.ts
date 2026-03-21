@@ -2,6 +2,10 @@ import { GifItem } from "@/lib/types";
 import { GifProvider, SearchResult, TrendingResult } from "./types";
 import { KlipyProvider } from "./klipy";
 import { GiphyProvider } from "./giphy";
+import { TTLCache } from "@/lib/cache";
+
+// Cache trending results for 5 minutes — avoids redundant API calls on every page load
+const trendingCache = new TTLCache<TrendingResult>(5 * 60 * 1000, 5);
 
 /**
  * Interleave arrays: [A1, B1, A2, B2, A3, B3, ...]
@@ -89,6 +93,16 @@ export async function getTrending(limit = 20): Promise<TrendingResult> {
     terms: uniqueTerms,
     next: "",
   };
+}
+
+export async function getCachedTrending(limit = 20): Promise<TrendingResult> {
+  const key = `trending:${limit}`;
+  const cached = trendingCache.get(key);
+  if (cached) return cached;
+
+  const result = await getTrending(limit);
+  trendingCache.set(key, result);
+  return result;
 }
 
 export async function getAutocomplete(query: string): Promise<string[]> {
