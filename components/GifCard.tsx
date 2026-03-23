@@ -17,10 +17,28 @@ interface GifCardProps {
 export function GifCard({ gif, index, onClick, showSource = true }: GifCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoFailed, setVideoFailed] = useState(false);
-  const { copyUrl } = useClipboard();
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { copyUrl, copyImage } = useClipboard();
   const { share } = useShare();
 
   const aspectRatio = gif.width && gif.height ? gif.width / gif.height : 1;
+
+  // Single click → open modal (delayed to distinguish from double-click)
+  const handleClick = useCallback(() => {
+    if (clickTimer.current) clearTimeout(clickTimer.current);
+    clickTimer.current = setTimeout(() => {
+      onClick();
+    }, 250);
+  }, [onClick]);
+
+  // Double-click → copy image immediately, cancel the pending single-click
+  const handleDoubleClick = useCallback(() => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+    }
+    copyImage(gif.gifUrl);
+  }, [copyImage, gif.gifUrl]);
 
   const handleCopy = useCallback(
     (e: React.MouseEvent) => {
@@ -51,7 +69,8 @@ export function GifCard({ gif, index, onClick, showSource = true }: GifCardProps
         damping: 25,
         delay: (index % 20) * 0.04,
       }}
-      onClick={onClick}
+      onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       className="group relative mb-4 cursor-pointer break-inside-avoid overflow-hidden rounded-2xl bg-zinc-200/40 dark:bg-zinc-800/40"
       style={{ aspectRatio }}
     >

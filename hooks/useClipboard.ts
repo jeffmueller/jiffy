@@ -28,6 +28,8 @@ export function useClipboard() {
 
       // Write HTML with an <img> tag so rich-text apps (iMessage, Slack, Discord)
       // render the animated GIF. Include plain text URL as fallback.
+      // We intentionally omit image/png — when it's present, apps prefer
+      // the static PNG over the HTML, which kills animation.
       const htmlBlob = new Blob(
         [`<img src="${imageUrl}" />`],
         { type: "text/html" }
