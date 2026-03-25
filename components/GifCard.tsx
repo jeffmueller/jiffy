@@ -71,7 +71,7 @@ export function GifCard({ gif, index, onClick, showSource = true }: GifCardProps
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      className="group relative mb-4 cursor-pointer break-inside-avoid overflow-hidden rounded-2xl bg-zinc-200/40 dark:bg-zinc-800/40"
+      className="group relative cursor-pointer overflow-hidden rounded-2xl bg-zinc-200/40 dark:bg-zinc-800/40"
       style={{ aspectRatio }}
     >
       {!videoFailed && gif.tinyMp4Url ? (
