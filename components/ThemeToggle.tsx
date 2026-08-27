@@ -1,49 +1,72 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { Moon, Sun } from "@phosphor-icons/react";
 
 type Theme = "light" | "dark";
 
-function getStoredTheme(): Theme | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("jiffy-theme") as Theme | null;
+const STORAGE_KEY = "jiffy-theme";
+
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const listener of listeners) listener();
 }
 
-function getSystemTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  // Follow the OS while the visitor has no stored preference, and pick up
+  // changes made in another tab.
+  media.addEventListener("change", listener);
+  window.addEventListener("storage", listener);
+  return () => {
+    listeners.delete(listener);
+    media.removeEventListener("change", listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
+function getSnapshot(): Theme {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
 }
 
+/**
+ * The server cannot know the visitor's theme. Returning null renders a
+ * placeholder for the hydrating pass, which is what keeps markup matching;
+ * the inline script in layout.tsx has already applied the right class, so
+ * nothing flashes. React swaps to getSnapshot once hydrated.
+ */
+function getServerSnapshot(): Theme | null {
+  return null;
+}
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
+  // Effects belong to syncing external systems — here, the document.
   useEffect(() => {
-    setTheme(getStoredTheme() || getSystemTheme());
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
+    if (!theme) return;
     document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("jiffy-theme", theme);
+    localStorage.setItem(STORAGE_KEY, theme);
 
-    // Update theme-color meta tag
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       meta.setAttribute("content", theme === "dark" ? "#09090b" : "#ffffff");
     }
-  }, [theme, mounted]);
+  }, [theme]);
 
   const toggle = useCallback(() => {
-    setTheme((t) => (t === "light" ? "dark" : "light"));
+    localStorage.setItem(STORAGE_KEY, getSnapshot() === "light" ? "dark" : "light");
+    emit();
   }, []);
 
-  // Avoid hydration mismatch — render nothing until mounted
-  if (!mounted) {
+  // Nothing to show until hydration resolves the real theme.
+  if (!theme) {
     return <div className="h-9 w-9" />;
   }
 

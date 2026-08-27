@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { GifItem } from "@/lib/types";
 import { GifCard } from "./GifCard";
 import { GifDetail } from "./GifDetail";
@@ -19,63 +19,34 @@ interface GifGridProps {
 }
 
 /**
- * Distribute items into columns using a shortest-column-first approach.
- * Each item is assigned once based on its aspect ratio (height estimate).
- * Items stay in their assigned column when new items are appended.
+ * Distribute items into columns, shortest column first, estimating each item's
+ * height from its aspect ratio.
+ *
+ * This is a pure function of (results, columnCount). Assignment walks the list
+ * in order, so appending items leaves every earlier item exactly where it was
+ * — which is what stops the grid reshuffling as infinite scroll loads more.
+ * Recomputing the whole layout is cheap; doing it incrementally meant mutating
+ * refs during render, which could assign the same items twice when React
+ * re-ran a render.
  */
 function useStableColumns(results: GifItem[], columnCount: number) {
-  const columnsRef = useRef<GifItem[][]>([]);
-  const assignedCountRef = useRef(0);
-  const prevColumnCountRef = useRef(columnCount);
-  const prevResultsIdRef = useRef<string | null>(null);
-
   return useMemo(() => {
-    // Detect if results were replaced (new search) vs appended (load more)
-    // by checking if existing items shifted
-    const firstResultId = results.length > 0 ? results[0].id : null;
-    const isNewSearch =
-      firstResultId !== prevResultsIdRef.current ||
-      columnCount !== prevColumnCountRef.current;
+    const columns: GifItem[][] = Array.from({ length: columnCount }, () => []);
+    const heights = new Array<number>(columnCount).fill(0);
 
-    if (isNewSearch) {
-      columnsRef.current = Array.from({ length: columnCount }, () => []);
-      assignedCountRef.current = 0;
-      prevResultsIdRef.current = firstResultId;
-      prevColumnCountRef.current = columnCount;
-    }
-
-    // Ensure we have the right number of columns
-    while (columnsRef.current.length < columnCount) {
-      columnsRef.current.push([]);
-    }
-
-    // Track estimated height per column for shortest-first assignment
-    const heights = columnsRef.current.map((col) =>
-      col.reduce((h, gif) => {
-        const aspect = gif.width && gif.height ? gif.width / gif.height : 1;
-        return h + 1 / aspect;
-      }, 0)
-    );
-
-    // Assign only new items (from assignedCountRef onward)
-    for (let i = assignedCountRef.current; i < results.length; i++) {
-      const gif = results[i];
+    for (const gif of results) {
       const aspect = gif.width && gif.height ? gif.width / gif.height : 1;
 
-      // Find the shortest column
       let shortest = 0;
       for (let c = 1; c < columnCount; c++) {
         if (heights[c] < heights[shortest]) shortest = c;
       }
 
-      columnsRef.current[shortest].push(gif);
+      columns[shortest].push(gif);
       heights[shortest] += 1 / aspect;
     }
 
-    assignedCountRef.current = results.length;
-
-    // Return a new array reference so React re-renders
-    return columnsRef.current.map((col) => [...col]);
+    return columns;
   }, [results, columnCount]);
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
@@ -33,13 +34,13 @@ export function GifDetailPage({ gif }: { gif: GifItem }) {
     <div className="flex min-h-[100dvh] flex-col items-center bg-background">
       <header className="sticky top-0 z-30 w-full border-b border-border/50 bg-background/80 backdrop-blur-lg">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 md:px-8">
-          <a
+          <Link
             href="/"
             className="flex items-center gap-2 text-sm font-medium text-muted transition-colors hover:text-foreground"
           >
             <ArrowLeft weight="bold" className="h-4 w-4" />
             Back to search
-          </a>
+          </Link>
         </div>
       </header>
 
