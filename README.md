@@ -131,6 +131,12 @@ You obtain your own keys and accept the providers' terms directly. Jiffy is not
 affiliated with GIPHY or KLIPY, and shipping it does not grant you any rights
 to their marks or their content.
 
+## Contributing
+
+Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md)
+for setup and what CI checks. To report a security issue, see
+[SECURITY.md](SECURITY.md); please don't open a public issue for those.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). The license covers Jiffy's own code only; the

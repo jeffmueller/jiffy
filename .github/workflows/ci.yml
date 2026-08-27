@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Lint, types, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # Needs network access: next/font/google fetches the Geist webfonts at
+      # build time. No API keys — nothing is baked into the build.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  image:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: jiffy:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Deliberately started with no provider keys: Jiffy must come up healthy
+      # without them, since that is what a first run looks like.
+      - name: Container boots and reports healthy
+        run: |
+          docker run -d --name jiffy -p 3000:3000 jiffy:ci
+
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:3000/api/providers >/dev/null && break
+            sleep 1
+          done
+
+          echo "providers: $(curl -fsS http://127.0.0.1:3000/api/providers)"
+          curl -fsS -o /dev/null -w 'home page: HTTP %{http_code}\n' http://127.0.0.1:3000/
+
+          for i in $(seq 1 30); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' jiffy)" = healthy ] && break
+            sleep 2
+          done
+
+          health=$(docker inspect -f '{{.State.Health.Status}}' jiffy)
+          echo "healthcheck: $health"
+          test "$health" = healthy
+
+      - name: Container logs
+        if: failure()
+        run: docker logs jiffy || true
