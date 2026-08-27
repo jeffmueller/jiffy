@@ -1,0 +1,30 @@
+services:
+  jiffy:
+    build:
+      context: .
+    image: jiffy:local
+    container_name: jiffy
+    restart: unless-stopped
+
+    # Host port (default 3003) -> container port 3000.
+    # 3003 matches deployment/conf/nginx.conf, so an existing reverse proxy
+    # keeps working unchanged.
+    ports:
+      - "${JIFFY_PORT:-3003}:3000"
+
+    # Provider API keys. Run `cp .env.example .env` first.
+    env_file:
+      - .env
+
+    environment:
+      TZ: ${TZ:-UTC}
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Keep logs from filling an SD card.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
