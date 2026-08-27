@@ -23,9 +23,9 @@ if [ -f "$SCRIPT_DIR/.env.deploy" ]; then
     source "$SCRIPT_DIR/.env.deploy"
 fi
 
-PI_USER=${PI_USER:-"jm"}
-PI_HOST=${PI_HOST:-"192.168.4.200"}
-DOMAIN_NAME=${DOMAIN_NAME:-"jiffy.fsrvr.com"}
+PI_USER=${PI_USER:-"pi"}
+PI_HOST=${PI_HOST:-"raspberrypi.local"}
+DOMAIN_NAME=${DOMAIN_NAME:-"jiffy.example.com"}
 RESTART_SERVICE=true
 UPDATE_NGINX=false
 
@@ -122,7 +122,7 @@ ssh "$PI_USER@$PI_HOST" << 'ENDSSH'
 set -e
 
 # Backup current deployment
-if [ -d ~/jiffy/app/server.js ]; then
+if [ -f ~/jiffy/app/server.js ]; then
     echo "Backing up current deployment..."
     BACKUP_DIR=~/jiffy/backups/$(date +%Y%m%d_%H%M%S)
     mkdir -p "$BACKUP_DIR"
@@ -143,11 +143,11 @@ fi
 # Extract new deployment
 mkdir -p ~/jiffy
 cd ~/jiffy
-rm -rf app.new
-tar -xzf ~/jiffy-deploy.tar.gz
-mv app app.new 2>/dev/null && mv app.old_remove 2>/dev/null || true
+rm -rf app.new app.old
+# The archive contains an `app/` directory; unpack it beside the live one.
+mkdir -p app.new
+tar -xzf ~/jiffy-deploy.tar.gz -C app.new --strip-components=1
 if [ -d app ]; then
-    rm -rf app.old
     mv app app.old
 fi
 mv app.new app

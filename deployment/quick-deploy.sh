@@ -17,7 +17,7 @@ if [ -f "$SCRIPT_DIR/.env.deploy" ]; then
     source "$SCRIPT_DIR/.env.deploy"
 fi
 
-PI_HOST=${PI_HOST:-"192.168.4.200"}
+PI_HOST=${PI_HOST:-"raspberrypi.local"}
 
 clear
 echo -e "${CYAN}╔═══════════════════════════════════════════════╗${NC}"
@@ -59,7 +59,7 @@ case $choice in
         echo ""
         echo -e "${CYAN}→ Connecting to view logs (Ctrl+C to exit)...${NC}"
         sleep 1
-        ssh ${PI_USER:-jm}@$PI_HOST 'sudo journalctl -u jiffy -f'
+        ssh ${PI_USER:-pi}@$PI_HOST 'sudo journalctl -u jiffy -f'
         ;;
     0)
         echo "Goodbye!"

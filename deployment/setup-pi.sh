@@ -22,9 +22,9 @@ if [ -f "$SCRIPT_DIR/.env.deploy" ]; then
     source "$SCRIPT_DIR/.env.deploy"
 fi
 
-PI_USER=${PI_USER:-"jm"}
-PI_HOST=${PI_HOST:-"192.168.4.200"}
-DOMAIN_NAME=${DOMAIN_NAME:-"jiffy.fsrvr.com"}
+PI_USER=${PI_USER:-"pi"}
+PI_HOST=${PI_HOST:-"raspberrypi.local"}
+DOMAIN_NAME=${DOMAIN_NAME:-"jiffy.example.com"}
 APP_PORT=3003
 
 print_status "═══════════════════════════════════════════════"

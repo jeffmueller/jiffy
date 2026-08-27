@@ -18,8 +18,8 @@ if [ -f "$SCRIPT_DIR/.env.deploy" ]; then
     source "$SCRIPT_DIR/.env.deploy"
 fi
 
-PI_USER=${PI_USER:-"jm"}
-PI_HOST=${PI_HOST:-"192.168.4.200"}
+PI_USER=${PI_USER:-"pi"}
+PI_HOST=${PI_HOST:-"raspberrypi.local"}
 
 print_status "═══════════════════════════════════════════════"
 print_status "  Jiffy - Status Check"
@@ -105,11 +105,11 @@ echo -e "${BLUE}  SSL Certificate${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 if command -v certbot &> /dev/null; then
-    CERT_INFO=$(sudo certbot certificates 2>/dev/null | grep -A2 "jiffy.fsrvr.com" | grep "Expiry Date" | head -1)
+    CERT_INFO=$(sudo certbot certificates 2>/dev/null | grep -A2 "jiffy.example.com" | grep "Expiry Date" | head -1)
     if [ -n "$CERT_INFO" ]; then
         echo -e "${GREEN}${CERT_INFO}${NC}"
     else
-        echo -e "${YELLOW}No certificate found for jiffy.fsrvr.com${NC}"
+        echo -e "${YELLOW}No certificate found for jiffy.example.com${NC}"
     fi
 else
     echo -e "${YELLOW}Certbot not installed${NC}"
