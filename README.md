@@ -44,7 +44,10 @@ simply return nothing until you add one and `docker compose up -d`.
 
 Both providers' free keys are capped at **100 calls/hour**, which is the real
 constraint on a shared instance — production access is a request form on each
-provider's dashboard.
+provider's dashboard. Getting a key means accepting that provider's terms,
+including its branding requirements — see [provider
+terms](#provider-terms-are-the-operators-responsibility) before putting an
+instance in front of other people.
 
 ### Rate limiting
 
@@ -101,24 +104,39 @@ npm run build   # production build (standalone output)
 npm run lint
 ```
 
-## Provider attribution
+## Provider terms are the operator's responsibility
 
-Both providers require their branding to be displayed by anything using their
-API, and that obligation passes to you when you self-host:
+Jiffy is built for personal use: your own instance, your own API keys. It ships
+plain-text attribution — "Powered by Giphy & Klipy" in the footer, plus a
+per-result source badge — and deliberately nothing more. No provider logo
+assets are bundled.
+
+**If you run an instance other people can reach, complying with each provider's
+terms is your responsibility, not Jiffy's.** Both ask for more than text:
 
 - **GIPHY** requires apps to "conspicuously display 'Powered By GIPHY'
-  attribution marks where the API is utilized," using their official logo marks.
-- **KLIPY** requires their branding too, recommending the "Powered by KLIPY"
-  logo and watermark, and "Search KLIPY" as the search placeholder.
+  attribution marks where the API is utilized," using their official logo
+  marks. See the [GIPHY API docs](https://developers.giphy.com/docs/api/).
+- **KLIPY** requires its branding as well — the "Powered by KLIPY" logo and
+  watermark, and "Search KLIPY" as the search field placeholder. See the
+  [KLIPY API docs](https://docs.klipy.com/getting-started).
 
-Jiffy currently shows text attribution ("Powered by Giphy & Klipy" plus a
-per-result source badge). If you run a public instance, review each provider's
-current brand guidelines and use their official marks.
+Worth knowing: neither set of brand guidelines really contemplates a results
+grid that interleaves two providers, so a public deployment has a judgement
+call to make about whether marks belong per-result, per-section, or globally.
+Read both current versions before deciding — they change, and the summary above
+is not a substitute.
+
+You obtain your own keys and accept the providers' terms directly. Jiffy is not
+affiliated with GIPHY or KLIPY, and shipping it does not grant you any rights
+to their marks or their content.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Jiffy is not affiliated with GIPHY or KLIPY; you
-bring your own API keys and accept their terms.
+MIT — see [LICENSE](LICENSE). The license covers Jiffy's own code only; the
+GIFs it displays and the provider marks belong to their respective owners, and
+your use of them is governed by [the providers'
+terms](#provider-terms-are-the-operators-responsibility).
 
 ## Layout
 
