@@ -4,6 +4,14 @@
   "description": "Find, copy and share GIFs. Searches Giphy and Klipy at once, and self-hosts in a single container.",
   "license": "MIT",
   "author": "Jeff Mueller",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffmueller/jiffy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jeffmueller/jiffy/issues"
+  },
+  "homepage": "https://github.com/jeffmueller/jiffy#readme",
   "private": true,
   "scripts": {
     "dev": "next dev",

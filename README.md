@@ -13,7 +13,7 @@ report `aarch64` or `x86_64`). Next.js does not ship native binaries for 32-bit
 ARM, so 32-bit Raspberry Pi OS will not build.
 
 ```bash
-git clone <this-repo> jiffy && cd jiffy
+git clone https://github.com/jeffmueller/jiffy.git && cd jiffy
 cp .env.example .env      # then add at least one API key (see below)
 docker compose up -d --build
 ```
