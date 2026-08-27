@@ -111,8 +111,18 @@ export class KlipyProvider implements GifProvider {
     return json.data || [];
   }
 
-  async getById(_id: string): Promise<GifItem | null> {
-    // Klipy doesn't have a direct get-by-ID endpoint
-    return null;
+  async getById(id: string): Promise<GifItem | null> {
+    if (!APP_KEY) return null;
+
+    // Strip the "klipy-" prefix if present
+    const klipyId = id.replace(/^klipy-/, "");
+
+    // Unlike search and trending, this returns the item directly under `data`
+    // rather than nested in `data.data`.
+    const res = await fetch(`${BASE_URL}/${APP_KEY}/gifs/${encodeURIComponent(klipyId)}`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json.data?.file ? mapItem(json.data) : null;
   }
 }
