@@ -42,6 +42,29 @@ Keys are read at runtime, never baked into the image, so the same image works fo
 anyone. Starting with no keys is safe: the app comes up healthy and searches
 simply return nothing until you add one and `docker compose up -d`.
 
+Both providers' free keys are capped at **100 calls/hour**, which is the real
+constraint on a shared instance — production access is a request form on each
+provider's dashboard.
+
+### Rate limiting
+
+Jiffy rate-limits its own API so that anyone who can reach the port can't burn
+through your provider quota. Defaults live in `.env`:
+
+| Variable                | Default | Meaning                                                        |
+| ----------------------- | ------- | -------------------------------------------------------------- |
+| `RATE_LIMIT_PER_MINUTE` | `60`    | Requests/minute against search, autocomplete, trending, proxy. `0` disables. |
+| `TRUST_PROXY_HEADERS`   | `false` | Whether to read the client IP from `X-Forwarded-For`.           |
+
+Leave `TRUST_PROXY_HEADERS` off when the container is exposed directly — every
+caller then shares one bucket, so the limit acts as a global cap. Turn it on
+behind a reverse proxy that sets the header (the bundled nginx config does) to
+get per-client limits instead. Trusting the header without a proxy in front
+would let anyone spoof it and skip the limit entirely.
+
+The app also sets its own CSP and security headers, so a bare `docker compose up`
+is protected without needing nginx.
+
 ### Building for a different machine
 
 The image builds on whatever architecture it runs on, so building on the target
@@ -78,6 +101,25 @@ npm run build   # production build (standalone output)
 npm run lint
 ```
 
+## Provider attribution
+
+Both providers require their branding to be displayed by anything using their
+API, and that obligation passes to you when you self-host:
+
+- **GIPHY** requires apps to "conspicuously display 'Powered By GIPHY'
+  attribution marks where the API is utilized," using their official logo marks.
+- **KLIPY** requires their branding too, recommending the "Powered by KLIPY"
+  logo and watermark, and "Search KLIPY" as the search placeholder.
+
+Jiffy currently shows text attribution ("Powered by Giphy & Klipy" plus a
+per-result source badge). If you run a public instance, review each provider's
+current brand guidelines and use their official marks.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Jiffy is not affiliated with GIPHY or KLIPY; you
+bring your own API keys and accept their terms.
+
 ## Layout
 
 | Path                | What's there                                                   |
@@ -86,4 +128,3 @@ npm run lint
 | `components/`       | UI                                                              |
 | `lib/providers/`    | Giphy and Klipy clients plus the interleaving/multiplexing logic |
 | `deployment/`       | Scripts for the non-Docker systemd + nginx deploy to a Pi        |
-| `JiffyiMessage/`    | iMessage sticker app extension (Xcode)                           |

@@ -1,6 +1,9 @@
 {
   "name": "jiffy",
   "version": "0.1.0",
+  "description": "Find, copy and share GIFs. Searches Giphy and Klipy at once, and self-hosts in a single container.",
+  "license": "MIT",
+  "author": "Jeff Mueller",
   "private": true,
   "scripts": {
     "dev": "next dev",
